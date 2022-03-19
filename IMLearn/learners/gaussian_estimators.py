@@ -2,6 +2,7 @@ from __future__ import annotations
 import imp
 from pickle import FALSE, TRUE
 import py_compile
+import re
 import numpy as np
 from numpy.linalg import inv, det, slogdet
 
@@ -110,7 +111,15 @@ class UnivariateGaussian:
         sum_vec= np.sum((X-mu)**2)
         pdf_vector = fraction*np.exp(-0.5*(sum_vec)/-2*((sigma)**0.5))
         return pdf_vector
-
+    
+def gaussian(mu:np.ndarray, cov:np.ndarray, X:np.ndarray)-> np.ndarray:
+    d= np.len(X)
+    constant = 1/np.sqrt(((2*np.pi)**d)*np.linalg.det(cov))
+    sigma_inv= np.linalg.inv(cov)
+    def pdf_sample(X_n):
+        constant*np.exp((-0.5(X_n-mu).T)@sigma_inv@(X_n-mu))
+    exp_value= np.apply_along_axis(pdf_sample, 1, X)
+    return constant*exp_value
 
 class MultivariateGaussian:
     """
@@ -156,10 +165,12 @@ class MultivariateGaussian:
         Then sets `self.fitted_` attribute to `True`
         """
         self.mu_= np.mean(X, axis=0)
-        self.cov_= np.cov(X, bias=False)
+        self.cov_= np.cov(X.T, bias=False)
         self.fitted_ = True
         return self
+    
 
+        
     def pdf(self, X: np.ndarray):
         """
         Calculate PDF of observations under Gaussian model with fitted estimators
@@ -180,8 +191,9 @@ class MultivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
-
+        # For each sample of n features, return a float:
+        return gaussian(self.mu, self.cov, X)
+    
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
         """
@@ -201,4 +213,5 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
-        raise NotImplementedError()
+        #multiply all elemnts in vector of gaussian:
+        return np.prod(gaussian(mu, cov, X))
