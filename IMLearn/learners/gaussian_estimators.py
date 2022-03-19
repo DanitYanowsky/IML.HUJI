@@ -1,4 +1,7 @@
 from __future__ import annotations
+import imp
+from pickle import FALSE, TRUE
+import py_compile
 import numpy as np
 from numpy.linalg import inv, det, slogdet
 
@@ -51,8 +54,11 @@ class UnivariateGaussian:
         Sets `self.mu_`, `self.var_` attributes according to calculated estimation (where
         estimator is either biased or unbiased). Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        self.mu_= np.mean(X)
+        if self.biased_==FALSE: 
+            self.var_= np.var(np.ndarray, ddof=0)
+        else:
+            self.var_= np.var(np.ndarray, ddof=1)
         self.fitted_ = True
         return self
 
@@ -76,7 +82,9 @@ class UnivariateGaussian:
         """
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
-        raise NotImplementedError()
+        fraction = 1/(((self.var_)**0.5)*((2*np.pi)**(0.5)))
+        pdf_vector = fraction*np.exp(-0.5*(X-self.mu)/(2*   (self.var_)**0.5))
+        return pdf_vector
 
     @staticmethod
     def log_likelihood(mu: float, sigma: float, X: np.ndarray) -> float:
@@ -97,7 +105,11 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        raise NotImplementedError()
+        m= np.len(X)
+        fraction = 1/((2*np.pi*((sigma)**0.5))**(0.5*m))
+        sum_vec= np.sum((X-mu)**2)
+        pdf_vector = fraction*np.exp(-0.5*(sum_vec)/-2*((sigma)**0.5))
+        return pdf_vector
 
 
 class MultivariateGaussian:
@@ -143,8 +155,8 @@ class MultivariateGaussian:
         Sets `self.mu_`, `self.cov_` attributes according to calculated estimation.
         Then sets `self.fitted_` attribute to `True`
         """
-        raise NotImplementedError()
-
+        self.mu_= np.mean(X, axis=0)
+        self.cov_= np.cov(X, bias=False)
         self.fitted_ = True
         return self
 
