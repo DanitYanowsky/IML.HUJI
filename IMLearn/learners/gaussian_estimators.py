@@ -110,16 +110,9 @@ class UnivariateGaussian:
         fraction = 1/((2*np.pi*((sigma)**0.5))**(0.5*m))
         sum_vec= np.sum((X-mu)**2)
         pdf_vector = fraction*np.exp(-0.5*(sum_vec)/-2*((sigma)**0.5))
-        return pdf_vector
+        return np.log(pdf_vector)
     
-def gaussian(mu:np.ndarray, cov:np.ndarray, X:np.ndarray)-> np.ndarray:
-    d= np.len(X)
-    constant = 1/np.sqrt(((2*np.pi)**d)*np.linalg.det(cov))
-    sigma_inv= np.linalg.inv(cov)
-    def pdf_sample(X_n):
-        constant*np.exp((-0.5(X_n-mu).T)@sigma_inv@(X_n-mu))
-    exp_value= np.apply_along_axis(pdf_sample, 1, X)
-    return constant*exp_value
+
 
 class MultivariateGaussian:
     """
@@ -169,6 +162,14 @@ class MultivariateGaussian:
         self.fitted_ = True
         return self
     
+    def gaussian(mu:np.ndarray, cov:np.ndarray, X:np.ndarray)-> np.ndarray:
+        d= np.len(X)
+        constant = 1/np.sqrt(((2*np.pi)**d)*np.linalg.det(cov))
+        sigma_inv= np.linalg.inv(cov)
+        def pdf_sample(X_n: np.ndarray):
+            return constant*np.exp((-0.5(X_n-mu).T)@sigma_inv@(X_n-mu))
+        exp_value= np.apply_along_axis(pdf_sample, 1, X)
+        return constant*exp_value
 
         
     def pdf(self, X: np.ndarray):
@@ -192,7 +193,7 @@ class MultivariateGaussian:
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
         # For each sample of n features, return a float:
-        return gaussian(self.mu, self.cov, X)
+        return self.gaussian(self.mu, self.cov, X)
     
     @staticmethod
     def log_likelihood(mu: np.ndarray, cov: np.ndarray, X: np.ndarray) -> float:
@@ -213,5 +214,5 @@ class MultivariateGaussian:
         log_likelihood: float
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
-        #multiply all elemnts in vector of gaussian:
-        return np.prod(gaussian(mu, cov, X))
+        #multiply all elemnts in vector of gaussian, and then doing log:
+        return np.log(np.prod(MultivariateGaussian.gaussian(mu, cov, X)))
