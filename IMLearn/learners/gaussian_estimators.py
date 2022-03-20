@@ -57,9 +57,9 @@ class UnivariateGaussian:
         """
         self.mu_= np.mean(X)
         if self.biased_==FALSE: 
-            self.var_= np.var(np.ndarray, ddof=0)
+            self.var_= np.var(X, ddof=0)
         else:
-            self.var_= np.var(np.ndarray, ddof=1)
+            self.var_= np.var(X, ddof=1)
         self.fitted_ = True
         return self
 
@@ -84,7 +84,7 @@ class UnivariateGaussian:
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `pdf` function")
         fraction = 1/(((self.var_)**0.5)*((2*np.pi)**(0.5)))
-        pdf_vector = fraction*np.exp(-0.5*(X-self.mu)/(2*   (self.var_)**0.5))
+        pdf_vector = fraction*np.exp(-0.5*(X-self.mu_)**2/(2*(self.var_)**0.5))
         return pdf_vector
 
     @staticmethod
@@ -163,13 +163,14 @@ class MultivariateGaussian:
         return self
     
     def gaussian(mu:np.ndarray, cov:np.ndarray, X:np.ndarray)-> np.ndarray:
-        d= np.len(X)
+        d= len(mu)
         constant = 1/np.sqrt(((2*np.pi)**d)*np.linalg.det(cov))
         sigma_inv= np.linalg.inv(cov)
         def pdf_sample(X_n: np.ndarray):
-            return constant*np.exp((-0.5(X_n-mu).T)@sigma_inv@(X_n-mu))
-        exp_value= np.apply_along_axis(pdf_sample, 1, X)
-        return constant*exp_value
+            exp_value=np.exp((-0.5*(X_n-mu).T)@sigma_inv@(X_n-mu))
+            return constant*exp_value
+        pdf_value= np.apply_along_axis(pdf_sample, 1, X)
+        return pdf_value
 
         
     def pdf(self, X: np.ndarray):
@@ -215,4 +216,5 @@ class MultivariateGaussian:
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
         #multiply all elemnts in vector of gaussian, and then doing log:
-        return np.log(np.prod(MultivariateGaussian.gaussian(mu, cov, X)))
+        return np.log(np.sum(MultivariateGaussian.gaussian(mu, cov, X)))
+    

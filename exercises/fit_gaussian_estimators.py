@@ -9,33 +9,71 @@ pio.templates.default = "simple_white"
 
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
-    Y1   = np.random.normal(10, 1, size=1000)
-    X = np.linspace(-10, 10, 1000)
-
-    make_subplots(rows=1, cols=2)\
-        .add_traces([go.Scatter(x=X, y=Y1, mode='lines', marker=dict(color="black"), showlegend=False),
-                    ], rows=[1,1], cols=[1,2])\
-        .add_traces([go.Scatter(x=X, y=Y1,   mode='markers', marker=dict(color="red"),  name="$\\mathcal{N}\\left(0,1\\right)$"),], 
-        rows=1, cols=[1,1,2,2])\
-        .update_layout(title_text=r"$\text{(2) Generating Data From Probabilistic Model}$", height=300)\
-        .show()
+    uni_inst = UnivariateGaussian()
+    mu=10
+    sigma=1
+    m =1000
+    X = np.random.normal(mu, sigma, size=m) # our samples
+    uni_inst.fit(X)
+    est_mu = uni_inst.mu_
+    est_var= uni_inst.var_
+    print(est_mu, est_var)
+        
     # Question 2 - Empirically showing sample mean is consistent
-    raise NotImplementedError()
+    abs_mean = []
+    for i in range(1,101):
+        index = i*10
+        uni_inst.fit(X[:index])
+        print(uni_inst.mu_)
+        abs_mean.append(np.abs(mu-uni_inst.mu_)) 
 
+    ms = np.linspace(10, 1000, 100).astype(np.int)
+    go.Figure([go.Scatter(x=ms, y=abs_mean, mode='markers+lines', name=r'$\widehat\mu-$\mu$'),],
+            layout=go.Layout(title=r"$\text{Abs distance between the estimated and true value of Exp, as function of number of samples}$", 
+                    xaxis_title="$m\\text{ number of samples}$", 
+                    yaxis_title="r$\\text{ |est_mu-mu|}$",
+                    height=300)).show()
+    
     # Question 3 - Plotting Empirical PDF of fitted model
-    raise NotImplementedError()
-
+    pdf_values = uni_inst.pdf(X)
+    go.Figure([go.Scatter(x=X, y=pdf_values, mode='markers', name=r'$\widehat\mu-$\mu$'),],
+        layout=go.Layout(title=r"$\text{Pdf values, as function of samples}$", 
+                xaxis_title="$m\\text{ sample}$", 
+                yaxis_title="r$\\text{ pdf}$",
+                height=300)).show()
 
 def test_multivariate_gaussian():
     # Question 4 - Draw samples and print fitted model
-    raise NotImplementedError()
+    multi_inst = MultivariateGaussian()
+    mu=np.array([0,0,4,0])
+    cov=np.array([[1,0.2,0,0.5],
+                  [0.2,2,0,0],
+                  [0,0,1,0],
+                  [0.5,0,0,1]])
+    m =1000
+    X = np.random.multivariate_normal(mu, cov, size=m) # our samples
+    multi_inst.fit(X)
+    est_mu = multi_inst.mu_
+    est_cov= multi_inst.cov_
+    print("mu= ",est_mu)
+    print("cov= ", est_cov)
 
     # Question 5 - Likelihood evaluation
-    raise NotImplementedError()
+    size = 200
+    F1 = np.linspace(-10,10,size)
+    F3 = np.linspace(-10,10,size)
+    mu_log=np.array(np.meshgrid(F1,0,F3,0)).T.reshape(size*size,4)
+    log_value = np.apply_along_axis(multi_inst.log_likelihood, 1, mu_log, multi_inst.cov_,X).reshape(size,size)
+    
+    trace = go.Heatmap(x = F1, y = F3, z = log_value, type = 'heatmap', colorscale = 'Viridis')
+    data = [trace]
+    fig = go.Figure(data = data)
+    fig.show()
 
     # Question 6 - Maximum likelihood
-    raise NotImplementedError()
-
+    i,j= np.unravel_index(log_value.argmax(), log_value.shape)
+    print(i,j)
+    return
 
 if __name__ == '__main__':
     np.random.seed(0)
