@@ -106,14 +106,10 @@ class UnivariateGaussian:
         log_likelihood: float
             log-likelihood calculated
         """
-        m= np.len(X)
-        fraction = 1/((2*np.pi*((sigma)**0.5))**(0.5*m))
-        sum_vec= np.sum((X-mu)**2)
-        pdf_vector = fraction*np.exp(-0.5*(sum_vec)/-2*((sigma)**0.5))
-        return np.log(pdf_vector)
+        m= len(X)
+        log_value=-0.5*m*np.log(2*np.pi*sigma)
+        return log_value-(1/(2*sigma))*np.sum((X-mu)**2)
     
-
-
 class MultivariateGaussian:
     """
     Class for multivariate Gaussian Distribution Estimator
@@ -216,5 +212,10 @@ class MultivariateGaussian:
             log-likelihood calculated over all input data and under given parameters of Gaussian
         """
         #multiply all elemnts in vector of gaussian, and then doing log:
-        return np.log(np.sum(MultivariateGaussian.gaussian(mu, cov, X)))
-    
+        m=len(X)
+        d=len(mu)
+        sigma_inv= np.linalg.inv(cov)
+        const = (m/2)*np.log(1/(((2*np.pi)**d)*np.linalg.det(cov)))
+        def prod_mat(X):
+            return ((X-mu).T)@sigma_inv@(X-mu)
+        return const-0.5*np.sum(np.apply_along_axis(prod_mat,1,X))
