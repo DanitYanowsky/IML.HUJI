@@ -3,6 +3,7 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 from numpy.linalg import pinv
+from IMLearn.metrics import loss_functions as loss
 
 
 class LinearRegression(BaseEstimator):
@@ -49,7 +50,8 @@ class LinearRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        raise NotImplementedError()
+        self.coefs_= np.pinv(X)@y
+        
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -65,7 +67,7 @@ class LinearRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        return X@self.coefs_
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -84,4 +86,5 @@ class LinearRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        raise NotImplementedError()
+        y_hat= self.predict(X) ##calculate the predicted y hat according to the predict function
+        return loss.mean_square_error(y, y_hat)

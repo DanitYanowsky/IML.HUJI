@@ -1,3 +1,4 @@
+print("HELLO")
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
 
@@ -9,6 +10,15 @@ import plotly.express as px
 import plotly.io as pio
 pio.templates.default = "simple_white"
 
+def proccess(matrix: pd.array):
+    # exclude_feutrues=["date", "waterfront", "view", "yr_renovated", "zipcode", "lat", "long"]
+    exclude_feutrues=["lat", "long","date"] ##Features that are not relevant for the regression
+    matrix = matrix.loc[:, ~matrix.columns.isin(exclude_feutrues)]
+    matrix=matrix.apply(pd.to_numeric, errors='coerce')
+    matrix = matrix.dropna()
+    return(matrix)
+    
+    
 
 def load_data(filename: str):
     """
@@ -23,7 +33,8 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
+    table = pd.read_csv(filename, index_col=0)
+    return proccess(table)
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
@@ -43,19 +54,38 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
-    raise NotImplementedError()
+    Y, X= y.to_numpy(), X.to_numpy()
+    y_sigma= np.sqrt(np.var(y))
+    corr_lst = []
+    for i in range(X.shape[1]):
+        
+        # cov = np.cov(X[:, i],y)
+        # xi_sigma=np.sqrt(np.var(X[:,i]), True, dtype=y.dtype)
+        # corr_i=cov/(xi_sigma*y_sigma)
+        corr_i = np.corrcoef(X[:, i],y)
+        print(corr_i)
+
+        # corr_lst.append(corr_i)
+    # print(corr_lst)
+    # for j in range(X.shape[1]):
+    #     go.Figure([go.Scatter(x=X[:,j], y=Y, mode='markers', name=r'$\widehat\mu-$\mu$'),],
+    #         layout=go.Layout(title=r"$\text{Abs distance between the estimated and true value of Exp, as function of number of samples}$", 
+    #                 xaxis_title="$m\\text{ number of samples}$", 
+    #                 yaxis_title="r$\\text{ |est_mu-mu|}$",
+    #                 height=300)).show()
+            
 
 
-if __name__ == '__main__':
-    np.random.seed(0)
-    # Question 1 - Load and preprocessing of housing prices dataset
-    raise NotImplementedError()
+# if __name__ == '__main__':
+#     np.random.seed(0)
+#     # Question 1 - Load and preprocessing of housing prices dataset
+#     matrix = load_data('datasets\house_prices.csv')
+#     print(matrix)
 
-    # Question 2 - Feature evaluation with respect to response
-    raise NotImplementedError()
-
+#     # Question 2 - Feature evaluation with respect to response
+#     # pd.get_dummies(matrix, columns=["zipcode"])
+#     feature_evaluation(matrix, matrix["price"])
     # Question 3 - Split samples into training- and testing sets.
-    raise NotImplementedError()
 
     # Question 4 - Fit model over increasing percentages of the overall training data
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
@@ -64,4 +94,3 @@ if __name__ == '__main__':
     #   3) Test fitted model over test set
     #   4) Store average and variance of loss over test set
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
-    raise NotImplementedError()

@@ -59,7 +59,7 @@ def test_multivariate_gaussian():
     print("cov= ", est_cov)
 
     # Question 5 - Likelihood evaluation
-    size = 200
+    size = 20
     F1 = np.linspace(-10,10,size)
     F3 = np.linspace(-10,10,size)
     mu_log=np.array(np.meshgrid(F1,0,F3,0)).T.reshape(size*size,4)
