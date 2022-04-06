@@ -27,7 +27,7 @@ or by downloading and unzipping it in `LOCAL_REPOSITORY_PATH`. Then:
   ```
   This will create a conda envoronment named `iml.env` with the specifications defined in `environment.yml`. If creating failed due to `ResolvePackageNotFound: plotly-orca` remove this line from environment file, create environment without, and then after activating environment run:
   ```
-  conda install -c plotly plotly-orca
+  conda activate iml
   ```
 - Activate the environment by `conda activate iml.env`.
 - To open one of the Jupyter notebooks:

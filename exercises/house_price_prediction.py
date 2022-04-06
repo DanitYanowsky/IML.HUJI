@@ -1,4 +1,3 @@
-print("HELLO")
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
 
@@ -11,12 +10,12 @@ import plotly.io as pio
 pio.templates.default = "simple_white"
 
 def proccess(matrix: pd.array):
-    # exclude_feutrues=["date", "waterfront", "view", "yr_renovated", "zipcode", "lat", "long"]
     exclude_feutrues=["lat", "long","date"] ##Features that are not relevant for the regression
     matrix = matrix.loc[:, ~matrix.columns.isin(exclude_feutrues)]
     matrix=matrix.apply(pd.to_numeric, errors='coerce')
-    matrix = matrix.dropna()
+    matrix = matrix.dropna().drop_duplicates()
     return(matrix)
+
     
     
 
@@ -35,6 +34,7 @@ def load_data(filename: str):
     """
     table = pd.read_csv(filename, index_col=0)
     return proccess(table)
+
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
@@ -59,14 +59,12 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     corr_lst = []
     for i in range(X.shape[1]):
         
-        # cov = np.cov(X[:, i],y)
-        # xi_sigma=np.sqrt(np.var(X[:,i]), True, dtype=y.dtype)
-        # corr_i=cov/(xi_sigma*y_sigma)
-        corr_i = np.corrcoef(X[:, i],y)
-        print(corr_i)
-
-        # corr_lst.append(corr_i)
-    # print(corr_lst)
+        cov = np.cov(X[:, i],y)
+        xi_sigma = np.sqrt(np.array(np.var(X[:,i])))
+        corr_i=cov/(xi_sigma*y_sigma)
+        corr_lst.append(corr_i[0,1])
+    
+    
     # for j in range(X.shape[1]):
     #     go.Figure([go.Scatter(x=X[:,j], y=Y, mode='markers', name=r'$\widehat\mu-$\mu$'),],
     #         layout=go.Layout(title=r"$\text{Abs distance between the estimated and true value of Exp, as function of number of samples}$", 
@@ -76,17 +74,21 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
             
 
 
-# if __name__ == '__main__':
-#     np.random.seed(0)
-#     # Question 1 - Load and preprocessing of housing prices dataset
-#     matrix = load_data('datasets\house_prices.csv')
-#     print(matrix)
+if __name__ == '__main__':
+    np.random.seed(0)
+    # Question 1 - Load and preprocessing of housing prices dataset
+    matrix = load_data('datasets/house_prices.csv')
+    # print(matrix)
 
-#     # Question 2 - Feature evaluation with respect to response
-#     # pd.get_dummies(matrix, columns=["zipcode"])
-#     feature_evaluation(matrix, matrix["price"])
+    # # Question 2 - Feature evaluation with respect to response
+    # pd.get_dummies(matrix, columns=["zipcode"])
+    # feature_evaluation(matrix, matrix["price"])
     # Question 3 - Split samples into training- and testing sets.
-
+    frac = 0.75
+    y= matrix["price"]
+    new_x = matrix.drop("price", axis=1)
+    train_X, train_y, test_X, test_y = split_train_test(new_x, y)
+    # split_data = split_train_test(matrix.drop("price", axis=1), matrix["price"], frac)
     # Question 4 - Fit model over increasing percentages of the overall training data
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
     #   1) Sample p% of the overall training data

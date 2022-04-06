@@ -1,9 +1,11 @@
 from typing import Tuple
 import numpy as np
 import pandas as pd
+import math
+import datetime
 
 
-def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .25) \
+def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .75) \
         -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
     """
     Split given sample to a training- and testing sample
@@ -28,12 +30,25 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .2
 
     test_X : DataFrame of shape (floor((1-train_proportion) * n_samples), n_features)
         Design matrix of test set
-
+    
     test_y : Series of shape (floor((1-train_proportion) * n_samples), )
         Responses of test samples
 
     """
-    raise NotImplementedError()
+    X["price"] = y
+    # num_samples = math.ceil(train_proportion*(X.shape[0]))
+    test = X.sample(frac= train_proportion)
+    test_index = test.index
+    train = X.drop(test_index)
+    n =train.shape[1]
+    m =test.shape[1]
+
+    train_X = train.iloc[:,0:n-2]
+    train_y = train.iloc[:,n-1]
+    test_X = test.iloc[:,0:m-2]
+    test_y = test.iloc[:,m-1]
+
+    return train_X ,train_y, test_X, test_y
 
 
 def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -55,3 +70,6 @@ def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
         while value `j` vas found in vector `b`
     """
     raise NotImplementedError()
+
+
+    
