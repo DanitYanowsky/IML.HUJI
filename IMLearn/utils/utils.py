@@ -35,18 +35,17 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
         Responses of test samples
 
     """
-    X["price"] = y
-    # num_samples = math.ceil(train_proportion*(X.shape[0]))
-    test = X.sample(frac= train_proportion)
-    test_index = test.index
-    train = X.drop(test_index)
-    n =train.shape[1]
-    m =test.shape[1]
-
-    train_X = train.iloc[:,0:n-2]
-    train_y = train.iloc[:,n-1]
-    test_X = test.iloc[:,0:m-2]
-    test_y = test.iloc[:,m-1]
+    size = X.shape[0]
+    num_samples = math.ceil(train_proportion*size)
+    indexes_rows = np.arange(size) 
+    np.random.shuffle(indexes_rows)
+    train_indexes = indexes_rows[:num_samples]
+    test_indexes = indexes_rows[num_samples:]
+    
+    train_X = X.iloc[train_indexes]
+    test_X = X.iloc[test_indexes]
+    train_y = y.iloc[train_indexes]
+    test_y = y.iloc[test_indexes]
 
     return train_X ,train_y, test_X, test_y
 

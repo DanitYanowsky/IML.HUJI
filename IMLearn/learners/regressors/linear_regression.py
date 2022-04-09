@@ -50,7 +50,7 @@ class LinearRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        self.coefs_= np.pinv(X)@y
+        self.coefs_= np.linalg.pinv(X)@y
         
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
@@ -86,5 +86,5 @@ class LinearRegression(BaseEstimator):
         loss : float
             Performance under MSE loss function
         """
-        y_hat= self.predict(X) ##calculate the predicted y hat according to the predict function
+        y_hat= self._predict(X) ##calculate the predicted y hat according to the predict function
         return loss.mean_square_error(y, y_hat)

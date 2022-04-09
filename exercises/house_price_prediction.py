@@ -1,5 +1,7 @@
 from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
+from IMLearn.metrics import loss_functions as loss
+
 
 from typing import NoReturn
 import numpy as np
@@ -10,13 +12,14 @@ import plotly.io as pio
 pio.templates.default = "simple_white"
 
 def proccess(matrix: pd.array):
-    exclude_feutrues=["lat", "long","date"] ##Features that are not relevant for the regression
+    exclude_feutrues=["sqft_lot15","sqft_lot","lat", "long","date"] ##Features that are not relevant for the regression
     matrix = matrix.loc[:, ~matrix.columns.isin(exclude_feutrues)]
-    matrix=matrix.apply(pd.to_numeric, errors='coerce')
-    matrix = matrix.dropna().drop_duplicates()
-    return(matrix)
+    matrix = matrix.apply(pd.to_numeric, errors="coerce")
+    matrix = matrix.dropna()
+    y=matrix['price']
+    X=matrix.loc[:,~matrix.columns.isin(["price"])]
+    return(X,y)
 
-    
     
 
 def load_data(filename: str):
@@ -77,18 +80,15 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    matrix = load_data('datasets/house_prices.csv')
-    # print(matrix)
+    X,y = load_data('datasets/house_prices.csv')
 
     # # Question 2 - Feature evaluation with respect to response
-    # pd.get_dummies(matrix, columns=["zipcode"])
-    # feature_evaluation(matrix, matrix["price"])
+    X= pd.get_dummies(X, columns=["zipcode"])
+    feature_evaluation(X, y)
+    
     # Question 3 - Split samples into training- and testing sets.
-    frac = 0.75
-    y= matrix["price"]
-    new_x = matrix.drop("price", axis=1)
-    train_X, train_y, test_X, test_y = split_train_test(new_x, y)
-    # split_data = split_train_test(matrix.drop("price", axis=1), matrix["price"], frac)
+    train_X, train_y, test_X, test_y = split_train_test(X, y)
+
     # Question 4 - Fit model over increasing percentages of the overall training data
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
     #   1) Sample p% of the overall training data
@@ -96,3 +96,29 @@ if __name__ == '__main__':
     #   3) Test fitted model over test set
     #   4) Store average and variance of loss over test set
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
+    train_X['price'] = train_y
+    model = LinearRegression()
+    average_loss = np.zeros(91)
+    std_loss = np.zeros(91)
+    for i in range(10,101):
+        loss_i = np.zeros(10)
+        for j in range(10):
+            p_train = train_X.sample(frac= i/100)
+            p_X = p_train.drop(["price"], axis=1)
+            model.fit(p_X, p_train["price"])
+            loss_i[j]=model._loss(test_X, test_y)
+        average_loss[i-10] = np.mean(loss_i)
+        std_loss[i-10] = (np.std(loss_i))
+    ms = np.arange(100)
+
+    go.Figure([go.Scatter(x=ms, y=average_loss, mode='markers+lines', name=r'$mean loss$'),
+              go.Scatter(x=ms, y=average_loss - (2 * std_loss), fill=None, mode="lines", line=dict(color="lightgrey"),
+                    showlegend=False),
+              go.Scatter(x=ms, y=average_loss + 2 * std_loss, fill='tonexty', mode="lines", line=dict(color="lightgrey"),
+                    showlegend=False)],
+        layout=go.Layout(title=r"$\ Loss as function of percentage of samples{}$", 
+                xaxis_title="$\\text{ Percentage of samples from the data}$", 
+                yaxis_title="r$\\text{ loss}$")).show()
+        
+            
+        
