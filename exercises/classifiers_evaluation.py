@@ -3,6 +3,7 @@ import numpy as np
 from typing import Tuple
 import plotly.graph_objects as go
 import plotly.io as pio
+import plotly.express as px
 from plotly.subplots import make_subplots
 pio.templates.default = "simple_white"
 
@@ -26,7 +27,11 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
         Class vector specifying for each sample its class
 
     """
-    raise NotImplementedError()
+    table = np.load(filename)
+    X = table[:,0:2]
+    y= table[:,2]
+    return(X,y)
+
 
 
 def run_perceptron():
@@ -38,14 +43,19 @@ def run_perceptron():
     """
     for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        X,y= load_dataset("datasets/" + f)
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        raise NotImplementedError()
-
+        def callback(instance: Perceptron,X_array,y_array):
+            losses.append(instance._loss(X_array,y_array))
         # Plot figure
-        raise NotImplementedError()
+        pre_algos = Perceptron(callback=callback)._fit(X,y)
+        np_iter = np.arange(len(losses))
+        go.Figure([go.Scatter(x=np_iter, y=losses, mode='markers+lines'),],
+        layout=go.Layout(title=r"Losses as function of iterations", 
+                xaxis_title="Iterations", 
+                yaxis_title="losses")).show()
 
 
 def compare_gaussian_classifiers():

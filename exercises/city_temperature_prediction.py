@@ -36,15 +36,15 @@ if __name__ == '__main__':
 
     # Question 2 - Exploring data for specific country
     israel_df = df.loc[df["City"] == "Tel Aviv"]
-    g1 = px.scatter(x=israel_df["DayOfYear"], y=israel_df["Temp"], color=israel_df["Year"].astype(str))
-    g1.update_traces(marker={'size': 3})
-    # g1.show()
-    ##to write titles in g1
+    g1 = px.scatter(x=israel_df["DayOfYear"], y=israel_df["Temp"], color=israel_df["Year"].astype(str), title="Temp as function of day of year")
+    g1.update_traces(marker={'size': 3}, text=("day of year","Std"))
+    g1.show()
     
     group_month = israel_df.groupby('Month')
     std_temp = (group_month["Temp"]).std()
-    g2 = px.bar(std_temp, title="std of Temp for each month")
-    # g2.show()
+    temps_std = std_temp.rename("Std")
+    g2 = px.bar(temps_std, title="Std of Temp for each month")
+    g2.show()
 
     # Question 3 - Exploring differences between countries
     country_month = df.groupby(['Month', 'Country'])
@@ -64,9 +64,8 @@ if __name__ == '__main__':
         pol_reg._fit(train_X, train_y)
         loss =pol_reg._loss(test_X, test_y)
         loss_array[k-1]= loss
-    g4 = px.bar(loss_array, title="")
+    g4 = px.bar(x=np.arange(1, 11), y=loss_array, title="Loss as function of values of k")
     g4.show()
-    ##change the num of x
         
     # Question 5 - Evaluating fitted model on different countries
     pol_reg = PolynomialFitting(5)
@@ -78,6 +77,6 @@ if __name__ == '__main__':
         loss =pol_reg._loss(df_j["DayOfYear"], df_j["Temp"])
         loss_array[j]= loss
 
-    g5 = px.bar(x=["Netherlands", "Jordan", "South Africa"],y=loss_array, title="")
+    g5 = px.bar(x=["Netherlands", "Jordan", "South Africa"], y=loss_array, title="Loss per country with K=5")
     g5.show()
 

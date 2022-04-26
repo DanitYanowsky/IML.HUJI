@@ -12,9 +12,13 @@ import plotly.io as pio
 pio.templates.default = "simple_white"
 
 def proccess(matrix: pd.array):
-    exclude_feutrues=["sqft_lot15","sqft_lot","lat", "long","date"] ##Features that are not relevant for the regression
+    exclude_feutrues=["sqft_lot15","sqft_lot","lat", "long","date","yr_renovated"] ##Features that are not relevant for the regression
     matrix = matrix.loc[:, ~matrix.columns.isin(exclude_feutrues)]
     matrix = matrix.apply(pd.to_numeric, errors="coerce")
+    matrix = matrix[matrix['yr_built'].values > 1000]
+    matrix = matrix[matrix['price'].values > 100]
+
+
     matrix = matrix.dropna()
     y=matrix['price']
     X=matrix.loc[:,~matrix.columns.isin(["price"])]
@@ -66,27 +70,32 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
         xi_sigma = np.sqrt(np.array(np.var(X[:,i])))
         corr_i=cov/(xi_sigma*y_sigma)
         corr_lst.append(corr_i[0,1])
-    
-    
-    # for j in range(X.shape[1]):
-    #     go.Figure([go.Scatter(x=X[:,j], y=Y, mode='markers', name=r'$\widehat\mu-$\mu$'),],
-    #         layout=go.Layout(title=r"$\text{Abs distance between the estimated and true value of Exp, as function of number of samples}$", 
-    #                 xaxis_title="$m\\text{ number of samples}$", 
-    #                 yaxis_title="r$\\text{ |est_mu-mu|}$",
-    #                 height=300)).show()
             
+    sqft_living=X[:,2]
+    go.Figure([go.Scatter(x=sqft_living, y=Y, mode='markers', name=r'$\price$'),],
+        layout=go.Layout(title=r"$\text{Price as function of sqft living}$", 
+                xaxis_title="$\\text{ sqft}$", 
+                yaxis_title="r$\\text{ price}$")).show()
+    
+    yr_built=X[:,10]
+    go.Figure([go.Scatter(x=yr_built, y=Y, mode='markers', name=r'$\yr_built$'),],
+        layout=go.Layout(title=r"$\text{Price as function of Year of built}$", 
+                xaxis_title="$\\text{ yr_built}$", 
+                yaxis_title="r$\\text{ price}$")).show()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    X,y = load_data('datasets/house_prices.csv')
+    X, y = load_data('datasets/house_prices.csv')
 
     # # Question 2 - Feature evaluation with respect to response
-    X= pd.get_dummies(X, columns=["zipcode"])
     feature_evaluation(X, y)
+
     
     # Question 3 - Split samples into training- and testing sets.
+    X = pd.get_dummies(X, columns=["zipcode"])
+
     train_X, train_y, test_X, test_y = split_train_test(X, y)
 
     # Question 4 - Fit model over increasing percentages of the overall training data
@@ -111,12 +120,12 @@ if __name__ == '__main__':
         std_loss[i-10] = (np.std(loss_i))
     ms = np.arange(100)
 
-    go.Figure([go.Scatter(x=ms, y=average_loss, mode='markers+lines', name=r'$mean loss$'),
+    go.Figure([go.Scatter(x=ms, y=average_loss, mode='markers+lines', name=r'\text{mean loss}$'),
               go.Scatter(x=ms, y=average_loss - (2 * std_loss), fill=None, mode="lines", line=dict(color="lightgrey"),
                     showlegend=False),
               go.Scatter(x=ms, y=average_loss + 2 * std_loss, fill='tonexty', mode="lines", line=dict(color="lightgrey"),
                     showlegend=False)],
-        layout=go.Layout(title=r"$\ Loss as function of percentage of samples{}$", 
+        layout=go.Layout(title=r"$\text{Loss as function of percentage of samples}$", 
                 xaxis_title="$\\text{ Percentage of samples from the data}$", 
                 yaxis_title="r$\\text{ loss}$")).show()
         
