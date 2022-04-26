@@ -1,12 +1,28 @@
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
-import numpy as np
 from typing import Tuple
+from utils import *
 import plotly.graph_objects as go
-import plotly.io as pio
-import plotly.express as px
 from plotly.subplots import make_subplots
-pio.templates.default = "simple_white"
+from math import atan2, pi
 
+
+def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Load dataset for comparing the Gaussian Naive Bayes and LDA classifiers. File is assumed to be an
+    ndarray of shape (n_samples, 3) where the first 2 columns represent features and the third column the class
+    Parameters
+    ----------
+    filename: str
+        Path to .npy data file
+    Returns
+    -------
+    X: ndarray of shape (n_samples, 2)
+        Design matrix to be used
+    y: ndarray of shape (n_samples,)
+        Class vector specifying for each sample its class
+    """
+    data = np.load(filename)
+    return data[:, :2], data[:, 2].astype(int)
 
 
 def run_perceptron():
