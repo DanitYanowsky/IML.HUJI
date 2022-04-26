@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 code\ examples/*.png
 code\ examples/*.gif
@@ -9,3 +10,15 @@ __pycache__
 lab/.ipynb_checkpoints/
 code\ examples/.ipynb_checkpoints/
 
+=======
+
+code\ examples/*.png
+code\ examples/*.gif
+*.png
+*.gif
+figures/*.png
+.idea
+**__pycache__
+**.ipynb_checkpoints
+
+>>>>>>> f3eb47f44426b18dc14f4064519bf22af7e892c6
