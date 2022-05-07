@@ -107,17 +107,17 @@ class Perceptron(BaseEstimator):
         
         #Perceptron
         while (counter <= self.max_iter_):
-            
-            value = y * (X@self.coefs_)
-            i = np.where(value<=np_zeros)
-            if i[0]!=[]:
-                self.coefs_=(self.coefs_ + y[i[0][0]]*X[i[0][0]])
-                self.callback_(self,X,y)
-            else:
+            if self._loss(X,y)==0:
                 return
-            if misclassification_error(y, X@self.coefs_)==0:
-                return  
+            value = y * (X@self.coefs_)
+            for i in range(y.shape[0]):
+                if y[i] * (X[i]@self.coefs_)<=0:
+                    self.coefs_=(self.coefs_ + y[i]*X[i])
+                    self.callback_(self,X,y)
+                    break
             counter+=1
+
+
         return
 
     def _predict(self, X: np.ndarray) -> np.ndarray:

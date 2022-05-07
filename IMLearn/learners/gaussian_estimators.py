@@ -219,3 +219,4 @@ class MultivariateGaussian:
         def prod_mat(X):
             return ((X-mu).T)@sigma_inv@(X-mu)
         return const-0.5*np.sum(np.apply_along_axis(prod_mat,1,X))
+

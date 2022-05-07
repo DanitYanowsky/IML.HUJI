@@ -1,3 +1,4 @@
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 from typing import Tuple
 from utils import *
@@ -41,8 +42,9 @@ def run_perceptron():
         def callback(instance: Perceptron,X_array,y_array):
             losses.append(instance._loss(X_array,y_array))
         # Plot figure
-        pre_algos = Perceptron(callback=callback)._fit(X,y)
-        np_iter = np.arange(len(losses))
+        pre_algos = Perceptron(callback=callback)
+        pre_algos._fit(X,y)
+        np_iter = np.arange(1, len(losses)+1)
         go.Figure([go.Scatter(x=np_iter, y=losses, mode='markers+lines'),],
         layout=go.Layout(title=r"Losses as function of iterations", 
                 xaxis_title="Iterations", 
@@ -81,25 +83,59 @@ def compare_gaussian_classifiers():
     """
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
-
+        X,y= load_dataset("datasets/" + f)
+        lda = LDA()
+        gnb = GaussianNaiveBayes()
+        
+        
         # Fit models and predict over training set
-        raise NotImplementedError()
+        lda._fit(X,y)
+        gnb._fit(X,y)
+        lda_predict = lda._predict(X)
+        gnb_predict = gnb._predict(X)
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         # Create subplots
         from IMLearn.metrics import accuracy
-        raise NotImplementedError()
-
-        # Add traces for data-points setting symbols and colors
-        raise NotImplementedError()
-
+        lda_accuracy = accuracy(y, lda_predict)
+        gnb_accuracy = accuracy(y, gnb_predict)
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=(f"Gaussian Naive Bias classifier, accuracy = {gnb_accuracy}",
+                                            f"LDA classifier, accuracy = {lda_accuracy}"))
+        
         # Add `X` dots specifying fitted Gaussians' means
-        raise NotImplementedError()
+        feature_1 = X[:, 0]
+        feature_2 = X[:, 1]
+        K = lda.classes_.shape[0]
+        fig.add_trace(go.Scatter(x=feature_1, y=feature_2, mode="markers", showlegend=False,
+                                 marker=dict(color=gnb_predict, symbol=y, opacity=.8)), row=1, col=1)
+        fig.add_trace(go.Scatter(x=feature_1, y=feature_2, mode="markers", showlegend=False,
+                                 marker=dict(color=lda_predict, symbol=y, opacity=.8)), row=1, col=2)
+        fig.update_layout(
+            title="Gaussian Naive Bias and LDA classifiers",
+            xaxis_title="Feature 1",
+            yaxis_title="Feature 2",)
 
-        # Add ellipses depicting the covariances of the fitted Gaussians
-        raise NotImplementedError()
+        for k in range(K):
+            lda_mu_k = lda.mu_[k] 
+            lda_cov_k = lda.cov_  
+            fig.add_trace(get_ellipse(lda_mu_k, lda_cov_k), row=1, col=2)
+
+            gnb_mu_k = (gnb.mu_)[k]  
+            gnb_cov_k = np.diag(gnb.vars_[k])  
+            fig.add_trace(get_ellipse(gnb_mu_k, gnb_cov_k), row=1, col=1)
+
+            a_lda = lda_mu_k[0]  # x of center
+            b_lda = lda_mu_k[1]  # y of center
+            fig.add_trace(go.Scatter(x=[a_lda], y=[b_lda], mode="markers", showlegend=False,
+                                     marker=dict(color="black", symbol="x", opacity=.8, size=12)), row=1, col=2)
+
+            a_gnb = gnb_mu_k[0]  # x of center
+            b_gnb = gnb_mu_k[1]  # y of center
+            fig.add_trace(go.Scatter(x=[a_gnb], y=[b_gnb], mode="markers", showlegend=False,
+                                     marker=dict(color="black", symbol="x", opacity=.8, size=12)), row=1, col=1)
+        fig.show()
 
 
 if __name__ == '__main__':
