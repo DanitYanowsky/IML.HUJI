@@ -37,9 +37,10 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: b
     -------
     Misclassification of given predictions
     """
-    vec_miss=y_true!=y_pred
+    vec_miss=y_true*y_pred
+    vec_miss[vec_miss>0] = 0
     m = y_true.shape[0]
-    num_miss = np.count_nonzero(vec_miss) #values that are correct
+    num_miss = np.abs(float(np.sum(vec_miss))) #values that are incorrect
     if not normalize:  
         return num_miss
     else:
@@ -82,5 +83,4 @@ def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     Cross entropy of given predictions
     """
     raise NotImplementedError()
-
 
